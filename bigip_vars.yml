@@ -1,0 +1,12 @@
+---
+f5_user: "{{ USER | default('admin') }}"
+f5_password: "{{ PASSWORD | default('admin') }}"
+as3_package: "{{ AS3_RPM }}"
+provider:
+  password: "{{ f5_password }}"
+  server: "{{ BIGIP }}"
+  user: "{{ f5_user }}"
+  transport: "rest"
+  validate_certs: False
+AS3_RPM: "f5-appsvcs-3.41.0-1.noarch.rpm"
+AS3_URL: "https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.41.0/f5-appsvcs-3.41.0-1.noarch.rpm"

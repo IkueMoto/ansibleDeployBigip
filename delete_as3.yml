@@ -1,0 +1,25 @@
+--- # Delete all tenants and uninstall as3 package
+- hosts: "localhost"
+  gather_facts: False
+
+  vars_files:
+    - http_app_vars.yml
+    - bigip_vars.yml
+
+  tasks:
+  - name: Delete AS3 tenants on BIG-IP
+    uri:
+      url: "https://{{ BIGIP }}:443/mgmt/shared/appsvcs/declare"
+      method: DELETE
+      user: "{{ f5_user }}"
+      password: "{{ f5_password }}"
+      status_code: 200
+      timeout: 300
+      body_format: json
+      validate_certs: no
+  - name: Uninstall AS3 package
+    bigip_lx_package:
+      package: "{{ AS3_RPM }}"
+      provider: "{{ provider }}"
+      state: "absent"
+    delegate_to: localhost

@@ -1,0 +1,47 @@
+--- # deploy as3 jinja template as3-http-app.j2
+- hosts: "localhost"
+  gather_facts: False
+
+  vars_files:
+    - http_app_vars.yml
+    - bigip_vars.yml
+
+  tasks:
+  - name: Checking for AS3 package...
+    stat:
+      path: "{{ AS3_RPM }}"
+    register: as3_package
+  - name: Download AS3 package
+    get_url:
+      url: "{{ AS3_URL }}"
+      dest: .
+    when: as3_package.stat.exists == false
+  - name: Install AS3
+    bigip_lx_package:
+      package: "{{ AS3_RPM }}"
+      provider: "{{ provider }}"
+  # Push AS3 declaration to BIG-IP
+  - name: Wait for AS3 service to be ready
+    uri:
+      url: "https://{{ BIGIP }}:443/mgmt/shared/appsvcs/info"
+      method: GET
+      user: "{{ f5_user }}"
+      password: "{{ f5_password }}"
+      status_code: 200
+      return_content: false
+      validate_certs: no
+    register: result
+    until: result.status == 200
+    retries: 10
+    delay: 5
+  - name: Push AS3 declaration to BIG-IP
+    uri:
+      url: "https://{{ BIGIP }}:443/mgmt/shared/appsvcs/declare"
+      method: POST
+      user: "{{ f5_user }}"
+      password: "{{ f5_password }}"
+      body: "{{ lookup('template', 'as3_http_app.j2') }}"
+      status_code: 200
+      timeout: 300
+      body_format: json
+      validate_certs: no

@@ -1,0 +1,3 @@
+---
+TENANT: ansibleHttpApp
+VIP_ADDRESS: 192.168.2.70
